@@ -1,0 +1,24 @@
+{
+  "name": "Provia: Pharmacist Hero",
+  "short_name": "Provia",
+  "description": "Master the UAE Pharmacist Exam in 45 Days.",
+  "id": "/",
+  "theme_color": "#020617",
+  "background_color": "#020617",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "/",
+  "scope": "/",
+  "categories": [
+    "education",
+    "medical"
+  ],
+  "icons": [
+    {
+      "src": "/logo-provia.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
