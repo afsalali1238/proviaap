@@ -8,28 +8,33 @@
 frontend/
 ├── dist/                        # Production build output
 ├── public/                      # Static assets
+│   ├── favicon.ico
+│   ├── icon-192.svg             # PWA icon
+│   ├── icon-512.svg             # PWA icon
 │   ├── logo-provia.png          # App logo
+│   ├── logo.png                 # App logo (alt)
 │   ├── manifest.json            # PWA manifest
-│   └── vite.svg
+│   ├── offline.html             # Offline fallback page
+│   └── service-worker.js        # Service Worker (cache v2)
 │
 ├── src/
 │   ├── features/                # Feature-based architecture
 │   │   ├── auth/
 │   │   │   ├── components/
-│   │   │   │   ├── LoginPage.tsx          # Login/Signup UI
-│   │   │   │   └── ProtectedRoute.tsx     # Route guard
+│   │   │   │   ├── LoginPage.tsx
+│   │   │   │   └── ProtectedRoute.tsx
 │   │   │   ├── hooks/
-│   │   │   │   └── useAuth.ts             # Auth hook
+│   │   │   │   └── useAuth.ts
 │   │   │   ├── services/
-│   │   │   │   └── auth.service.ts        # Auth business logic
+│   │   │   │   └── auth.service.ts
 │   │   │   ├── store/
-│   │   │   │   └── authStore.ts           # Zustand auth state
+│   │   │   │   └── authStore.ts
 │   │   │   └── types/
 │   │   │       └── user.types.ts
 │   │   │
 │   │   ├── battle/
 │   │   │   ├── data/
-│   │   │   │   └── battle.data.ts         # Mock battle data
+│   │   │   │   └── battle.data.ts
 │   │   │   └── pages/
 │   │   │       ├── BattleArena.tsx
 │   │   │       ├── ChatPage.tsx
@@ -57,22 +62,21 @@ frontend/
 │   │   │   │   ├── QuestionCard.tsx
 │   │   │   │   └── QuizResults.tsx
 │   │   │   ├── data/
-│   │   │   │   ├── final_questionnaire_data.json  # 2,000+ questions
-│   │   │   │   └── mockQuestions.ts
+│   │   │   │   └── mockQuestions.ts      # ← 2,253 questions (generated)
 │   │   │   ├── pages/
 │   │   │   │   └── DailyQuestions.tsx
 │   │   │   └── types/
 │   │   │       └── question.types.ts
 │   │   │
 │   │   ├── quiz/
-│   │   │   ├── QuizEngine.tsx             # Core quiz UI & logic
+│   │   │   ├── QuizEngine.tsx
 │   │   │   └── store/
-│   │   │       └── quizStore.ts           # Zustand quiz state
+│   │   │       └── quizStore.ts          # Quiz state (persistence: provia-quiz-storage-v3)
 │   │   │
 │   │   ├── roadmap/
-│   │   │   ├── Roadmap.tsx
+│   │   │   ├── Roadmap.tsx               # Uses ALL_QUESTIONS from mockQuestions.ts
 │   │   │   └── store/
-│   │   │       └── proviaStore.ts         # Zustand main state (roadmap, credits, streaks)
+│   │   │       └── proviaStore.ts
 │   │   │
 │   │   ├── social/
 │   │   │   ├── TheLounge.tsx
@@ -84,30 +88,35 @@ frontend/
 │   │   │       └── Referral.tsx
 │   │   │
 │   │   └── theme/
-│   │       └── themeStore.ts              # Zustand dark/light mode
+│   │       └── themeStore.ts
 │   │
 │   ├── lib/
 │   │   └── firebase/
-│   │       └── config.ts                  # Firebase config (Google OAuth)
+│   │       └── config.ts
 │   │
 │   ├── pages/
-│   │   ├── Dashboard.tsx                  # Main app (Home, Tests, Battle, Chat tabs)
-│   │   └── LandingPage.tsx                # Marketing landing page
+│   │   ├── Dashboard.tsx                 # Main app (uses ALL_QUESTIONS, shows v2.1 tag)
+│   │   └── LandingPage.tsx
 │   │
 │   ├── services/
 │   │   ├── auth.ts
-│   │   ├── localAuth.ts                   # Local auth service
-│   │   ├── localStore.ts                  # Local data persistence
+│   │   ├── localAuth.ts
+│   │   ├── localStore.ts                 # Uses ALL_QUESTIONS from mockQuestions.ts
+│   │   ├── store.ts                      # Uses ALL_QUESTIONS from mockQuestions.ts
 │   │   └── database/
 │   │       ├── index.ts
 │   │       ├── firestore.service.ts
 │   │       ├── questions.db.ts
 │   │       └── users.db.ts
 │   │
-│   ├── App.tsx                            # Root component & routing
-│   ├── App.css                            # Component styles
-│   ├── main.tsx                           # Entry point
-│   ├── index.css                          # Global + Tailwind styles
+│   ├── utils/
+│   │   ├── pwa.utils.tsx
+│   │   └── registerSW.ts
+│   │
+│   ├── App.tsx                           # Root component & routing
+│   ├── App.css                           # Component styles
+│   ├── main.tsx                          # Entry point
+│   ├── index.css                         # Global + Tailwind styles
 │   └── vite-env.d.ts
 │
 ├── package.json
@@ -115,21 +124,22 @@ frontend/
 ├── tailwind.config.js
 ├── postcss.config.js
 ├── vite.config.ts
-├── vercel.json                            # SPA rewrite rules
+├── vercel.json                           # SPA rewrite rules
 └── README.md
 ```
 
 ## Key Files
-- **`src/pages/Dashboard.tsx`**: Main app — 4 tabs (Home, Tests, Battle, Discussions), roadmap grid, settings.
-- **`src/features/quiz/QuizEngine.tsx`**: Quiz flow with attempt limits, cooldowns, scoring.
-- **`src/features/quiz/store/quizStore.ts`**: Quiz state (attempts, cooldowns, scores).
+- **`src/pages/Dashboard.tsx`**: Main app — 4 tabs (Home, Tests, Battle, Discussions), roadmap grid, settings, v2.1 version tag.
+- **`src/features/quiz/QuizEngine.tsx`**: Quiz flow with 30-question limit, attempt limits, cooldowns, scoring.
+- **`src/features/quiz/store/quizStore.ts`**: Quiz state (attempts, cooldowns, scores). Persistence key: `provia-quiz-storage-v3`.
 - **`src/features/roadmap/store/proviaStore.ts`**: Core state (45-day roadmap, hero credits, streak, duels).
-- **`src/features/theme/themeStore.ts`**: Dark/light mode preference.
-- **`src/features/auth/store/authStore.ts`**: Auth session state.
-- **`src/features/questions/data/final_questionnaire_data.json`**: All 2,000+ questions.
+- **`src/features/questions/data/mockQuestions.ts`**: All 2,253 questions (generated from `final_questions.json`).
+- **`src/features/roadmap/Roadmap.tsx`**: Uses `ALL_QUESTIONS` from `mockQuestions.ts`.
 - **`src/pages/LandingPage.tsx`**: Marketing page.
+- **`public/service-worker.js`**: Service Worker with cache version v2.
 
 ## Output Config
 - Build output: `./dist`
 - Vercel serves from `./dist` (SPA mode via `vercel.json`).
-- Deploy: `npx vercel --prod --yes` from `frontend/` directory.
+- Deploy: Push to `origin/main` on `https://github.com/afsalali1238/proviaap`.
+- Vercel Root Directory: `frontend`.

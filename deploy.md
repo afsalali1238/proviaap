@@ -1,7 +1,7 @@
 # Deployment Guide
 
 ## Project: PROVIA (Prometric Hero)
-**Last Updated**: February 22, 2026
+**Last Updated**: March 11, 2026
 
 ---
 
@@ -16,32 +16,32 @@ git push origin main
 ```
 
 ### Repository
-- **Remote**: `origin` → GitHub (`afsalali1238/previa`)
+- **Remote**: `origin` → GitHub (`afsalali1238/proviaap`)
 - **Branch**: `main`
+- **URL**: https://github.com/afsalali1238/proviaap
 
 ---
 
 ## 2. Deploy to Vercel
 
-### Option A: CLI Deploy (Fastest)
+### Option A: Auto-Deploy via Git (Recommended)
+Pushing to `origin/main` triggers automatic Vercel deployment if the GitHub repo is connected in the Vercel dashboard.
+
+### Option B: CLI Deploy
 ```powershell
 cd c:\Users\HP\Desktop\antigravity\PROVIA\Prometric\frontend
 npx vercel --prod --yes
 ```
-This builds and deploys in ~25 seconds.
 
-### Option B: Auto-Deploy via Git
-Pushing to `origin/main` triggers automatic Vercel deployment if the GitHub repo is connected in the Vercel dashboard.
-
-### Vercel Config
+### Vercel Project Settings
 - **Framework**: Vite
-- **Root Directory**: `frontend`
+- **Root Directory**: `frontend` *(CRITICAL — must be set in Vercel Settings > General)*
 - **Build Command**: `npm run build` (runs `tsc -b && vite build`)
 - **Output Directory**: `dist`
-- **SPA Rewrites**: Configured in `vercel.json`
+- **SPA Rewrites**: Configured in `frontend/vercel.json`
 
 ### Current Production URL
-`https://frontend-beta-flax-54.vercel.app/`
+`https://proviaap.vercel.app/`
 
 ---
 
@@ -67,15 +67,45 @@ Fix any TypeScript errors before deploying.
 - **No backend server required** — fully static SPA.
 - **State**: Zustand stores persisted to `localStorage`.
 - **Auth**: Google OAuth via Firebase Auth SDK (client-side only).
-- **Questions**: Bundled as static JSON (`final_questionnaire_data.json`).
+- **Questions**: Generated TypeScript file (`mockQuestions.ts`) bundled at build time.
+- **Question Pipeline**: `Check_Final_No_Media.csv` → `provia_question_bank.json` → `mockQuestions.ts`
 
 ---
 
-## 5. Common Issues
+## 5. Question Data Regeneration
+
+If you need to update the question bank:
+
+```powershell
+# Step 1: Convert CSV to JSON
+cd c:\Users\HP\Desktop\antigravity\PROVIA\Prometric\backend
+python csv_to_json.py
+
+# Step 2: Generate mockQuestions.ts
+python generate_final.py
+
+# Step 3: Build and push
+cd ..\frontend
+npm run build
+cd ..
+git add -A
+git commit -m "update: regenerated question bank"
+git push origin main
+```
+
+---
+
+## 6. Common Issues
 
 | Issue | Fix |
 |-------|-----|
 | Build fails with TS errors | Run `npx tsc -b` locally, fix reported errors |
-| Vercel deploy fails | Check build logs at `https://vercel.com/dashboard` |
-| PowerShell `&&` doesn't work | Use separate commands (one per line) |
-| Old data showing | Clear `localStorage` in browser DevTools |
+| Vercel deploy fails | Check `Root Directory` is set to `frontend` in Vercel Settings |
+| Vercel 404 error | Ensure `Root Directory = frontend` and `vercel.json` exists |
+| Old data showing | Clear `localStorage` in browser DevTools, or bump persistence key in `quizStore.ts` |
+| Service Worker caching old data | Increment cache versions in `public/service-worker.js` |
+
+---
+
+## 7. Version Verification
+The Dashboard header shows a version tag (e.g., "v2.1 - NEW BANK") to confirm which build is live.

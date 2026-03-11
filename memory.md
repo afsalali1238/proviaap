@@ -1,5 +1,27 @@
 # Development Memory Log
 
+## [2026-03-05] - New Question Bank & Fresh Deployment
+### Context
+Old `final_questionnaire_data.json` was outdated and contained incorrect data. User wanted to replace it with cleaned, scheduled questions from `Check_Final_No_Media.csv` (2,253 MCQs across 44 study days). User also wanted 30 randomized questions per daily test instead of 50.
+### Decision
+1. Built a data pipeline: `CSV → JSON → TypeScript` using `csv_to_json.py` and `generate_final.py`.
+2. Replaced all imports of old JSON with `ALL_QUESTIONS` from generated `mockQuestions.ts`.
+3. Refactored `quizStore.ts` to enforce 30-question daily limit (25 current + 5 review).
+4. Created a fresh Git repository (`afsalali1238/proviaap`) and cleaned `.gitignore` to exclude PDFs, CSVs, and legacy data.
+### Implementation
+- **Data Pipeline**: `backend/csv_to_json.py` converts CSV to `provia_question_bank.json`. `backend/generate_final.py` generates `mockQuestions.ts` with `ALL_QUESTIONS` and `QUESTIONS_BY_DAY` exports.
+- **Import Cleanup**: Removed old JSON imports from `Dashboard.tsx`, `Roadmap.tsx`, `DailyQuestions.tsx`, `store.ts`, `localStore.ts`.
+- **Roadmap Fix**: Replaced 2,700 hardcoded placeholder questions in `Roadmap.tsx` with real `ALL_QUESTIONS` data.
+- **Cache Busting**: Bumped Service Worker caches to v2, changed Zustand quiz persistence key to `provia-quiz-storage-v3`.
+- **Version Tag**: Added "v2.1 - NEW BANK" indicator to Dashboard header for deployment verification.
+- **Fresh Repo**: Reset Git history, excluded large files, pushed to `https://github.com/afsalali1238/proviaap`.
+### Challenges
+- Browser's localStorage and Service Worker aggressively cached old question data even after code changes.
+- TypeScript build errors from lingering imports of deleted `questions_v2.ts` file in `DailyQuestions.tsx`.
+- Vercel 404 due to Root Directory not being set to `frontend` in project settings.
+
+---
+
 ## [2026-02-22] - UI/UX Polish, Quiz Timers, and Banners
 ### Context
 User requested integration of completed features (Battle, Chat), UI fixes (Calendar layout, Default Light Theme), new tracking metrics in the Quiz (Timer, Avg Time), and marketing banners.
@@ -61,7 +83,7 @@ Firebase required Billing on Google Cloud Platform — not suitable for free/pro
 ### Implementation
 - **Auth**: Replaced `firebase/auth` with `localAuth.ts` (mock signup/signin with hashed passwords in localStorage).
 - **Database**: Replaced `firestore` with `localStore.ts` (JSON in localStorage).
-- **Questions**: Import `final_questionnaire_data.json` directly into the bundle.
+- **Questions**: Import question data directly into the bundle.
 ### Impacts
 - **Positive**: Zero cost, zero latency, works offline, easier deployment.
 - **Negative**: No cross-device sync, no real security, slightly larger bundle.

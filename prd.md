@@ -1,9 +1,9 @@
-     # Product Requirements Document (PRD)
+# Product Requirements Document (PRD)
 **Project Name:** PROVIA — 45-Day Prometric Challenge
-**Version:** 3.0 (Zustand + Feature Architecture)
+**Version:** 4.0 (Updated Question Bank + Clean Deployment)
 **Status:** Live & Iterating
 **Platform:** Progressive Web App (PWA) / Static Web Site
-**Last Updated:** February 22, 2026
+**Last Updated:** March 11, 2026
 
 ---
 
@@ -22,13 +22,14 @@
 * Protected routes via `ProtectedRoute` component.
 
 ### 2.2 The 45-Day Campaign
-* **45 daily topics** mapped from real Prometric exam syllabus.
+* **45 daily topics** mapped from real Prometric exam syllabus (GULF EXAM SCHEDULE).
 * **Sequential unlock**: Complete Day N (≥80% quiz score) → Day N+1 unlocks.
 * **Day detail sheet**: Tap any day (including locked) to see its main topic + sub-topics.
 * **7 Worlds**: Foundation, The Engine, The Lab, Clinical Mastery, Toxicology & Safety, Advanced Pharmaco, Final Boss.
 
 ### 2.3 Quiz Engine
-* **Questions**: 2,000+ MCQs from `final_questionnaire_data.json`.
+* **Questions**: 2,253 MCQs from `mockQuestions.ts` (generated from `final_questions.json` via `generate_final.py`).
+* **Daily limit**: 30 randomized questions per day (25 current day + 5 review from past days).
 * **Attempt limits**: 3 attempts per day per topic.
 * **Cooldown**: 30-minute wait between failed attempts.
 * **Pass mark**: 80% required to complete a day.
@@ -76,10 +77,16 @@
 
 ### 3.3 Data Persistence
 * **Primary:** `localStorage` via Zustand `persist` middleware.
-* **Keys:** `provia-v2-store`, `quiz-store`, `auth-store`, `theme-store`.
+* **Keys:** `provia-v2-store`, `provia-quiz-storage-v3`, `auth-store`, `theme-store`.
 * **Backup:** None (device-specific).
 
-### 3.4 Authentication
+### 3.4 Question Data Pipeline
+* **Source:** `Check_Final_No_Media.csv` → `provia_question_bank.json` (via `backend/csv_to_json.py`)
+* **Generator:** `backend/generate_final.py` → `frontend/src/features/questions/data/mockQuestions.ts`
+* **Interface:** Questions use `{ id, dayId, question, options, correctAnswer, explanation, topic }` shape.
+* **Total:** 2,253 MCQs across 44 scheduled study days.
+
+### 3.5 Authentication
 * **Primary:** Google OAuth2 (Firebase Auth SDK).
 * **Fallback:** Local email/password auth.
 
@@ -87,9 +94,12 @@
 
 ## 4. Deployment
 * **Host:** Vercel (free tier)
-* **Deploy:** `npx vercel --prod --yes` from `frontend/`
-* **Git:** Push to `origin/main` triggers auto-deploy.
-* **URL:** `https://frontend-beta-flax-54.vercel.app/`
+* **Git:** `https://github.com/afsalali1238/proviaap`
+* **Root Directory:** `frontend` (must be set in Vercel project settings)
+* **Build Command:** `npm run build` (runs `tsc -b && vite build`)
+* **Output Directory:** `dist`
+* **URL:** `https://proviaap.vercel.app/`
+* **Version Indicator:** "v2.1 - NEW BANK" tag visible in Dashboard header.
 
 ---
 
@@ -104,3 +114,5 @@
 - [x] LocalStorage pivot approved (Feb 15, 2026)
 - [x] Zustand migration approved (Feb 20, 2026)
 - [x] Google OAuth integration (Feb 21, 2026)
+- [x] New question bank integration (Mar 5, 2026)
+- [x] Fresh repository & deployment (Mar 5, 2026)
