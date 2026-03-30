@@ -50,7 +50,7 @@ export const ReportQuestionModal: React.FC<ReportQuestionModalProps> = ({
       await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(payload),
       });
       setStatus('success');
