@@ -20,7 +20,7 @@ const ISSUE_TYPES = [
 ];
 
 // Replace this with your deployed Google Apps Script URL
-const APPS_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6_PXewl21Nh7FviBikqHQ4powPGXdGZIG7Tssy3wVcEqyP5QdWmYm2Ay-3oHamBLK/exec';
 
 export const ReportQuestionModal: React.FC<ReportQuestionModalProps> = ({
   questionId, dayId, questionText, options, correctAnswerIndex, onClose,
