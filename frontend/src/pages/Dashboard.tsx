@@ -4,6 +4,7 @@ import { useProviaStore } from '../features/roadmap/store/proviaStore';
 import { useQuizStore } from '../features/quiz/store/quizStore';
 import { useThemeStore } from '../features/theme/themeStore';
 import { QuizEngine } from '../features/quiz/QuizEngine';
+import { ExportReportsButton } from '../features/quiz/ReportQuestionModal';
 import { ALL_QUESTIONS } from '../features/questions/data/mockQuestions';
 import { BattleArena } from '../features/battle/pages/BattleArena';
 import { ChatPage } from '../features/battle/pages/ChatPage';
@@ -468,6 +469,8 @@ const SettingsPanel: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             </button>
           </div>
 
+          {/* Export Reports */}
+          <ExportReportsButton />
 
           <button onClick={logout} className="w-full flex items-center gap-3 rounded-xl p-4 active:scale-95" style={{ backgroundColor: '#ef444415', border: '1px solid #ef444430' }}>
             <LogOut className="w-5 h-5 text-red-500" />

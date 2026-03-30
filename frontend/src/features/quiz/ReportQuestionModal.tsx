@@ -1,6 +1,72 @@
 import React, { useState } from 'react';
-import { Flag, X, Send, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Flag, X, Send, CheckCircle, Download } from 'lucide-react';
 
+// ── Report data types ──
+export interface QuestionReport {
+  questionId: string;
+  day: number;
+  questionText: string;
+  issueType: string;
+  comment: string;
+  suggestedAnswer: string;
+  shownCorrectAnswer: string;
+  allOptions: string;
+  timestamp: string;
+}
+
+const STORAGE_KEY = 'provia-question-reports';
+
+// ── Helper functions for managing reports ──
+export function getReports(): QuestionReport[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveReport(report: QuestionReport): void {
+  const reports = getReports();
+  reports.push(report);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(reports));
+}
+
+export function getReportCount(): number {
+  return getReports().length;
+}
+
+export function exportReportsAsCSV(): string {
+  const reports = getReports();
+  if (reports.length === 0) return '';
+
+  const headers = ['Timestamp', 'Question ID', 'Day', 'Question Text', 'Issue Type', 'Comment', 'Suggested Answer', 'Shown Correct Answer', 'All Options'];
+  const escape = (val: string) => `"${String(val).replace(/"/g, '""')}"`;
+
+  const rows = reports.map(r => [
+    r.timestamp, r.questionId, r.day, r.questionText,
+    r.issueType, r.comment, r.suggestedAnswer, r.shownCorrectAnswer, r.allOptions,
+  ].map(v => escape(String(v))).join(','));
+
+  return [headers.join(','), ...rows].join('\n');
+}
+
+export function downloadReports(): void {
+  const csv = exportReportsAsCSV();
+  if (!csv) return;
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `provia_question_reports_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+// ── Modal Props ──
 interface ReportQuestionModalProps {
   questionId: string;
   dayId: number;
@@ -19,45 +85,32 @@ const ISSUE_TYPES = [
   'Other',
 ];
 
-// Replace this with your deployed Google Apps Script URL
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6_PXewl21Nh7FviBikqHQ4powPGXdGZIG7Tssy3wVcEqyP5QdWmYm2Ay-3oHamBLK/exec';
-
+// ── Modal Component ──
 export const ReportQuestionModal: React.FC<ReportQuestionModalProps> = ({
   questionId, dayId, questionText, options, correctAnswerIndex, onClose,
 }) => {
   const [issueType, setIssueType] = useState('');
   const [comment, setComment] = useState('');
   const [suggestedAnswer, setSuggestedAnswer] = useState('');
-  const [status, setStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'success'>('idle');
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!issueType) return;
-    setStatus('sending');
 
-    const payload = {
+    saveReport({
       questionId,
       day: dayId,
-      questionText: questionText.slice(0, 200),
+      questionText: questionText.slice(0, 300),
       issueType,
       comment,
       suggestedAnswer,
       shownCorrectAnswer: options[correctAnswerIndex] || 'N/A',
       allOptions: options.join(' | '),
       timestamp: new Date().toISOString(),
-    };
+    });
 
-    try {
-      await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(payload),
-      });
-      setStatus('success');
-      setTimeout(onClose, 1800);
-    } catch {
-      setStatus('error');
-    }
+    setStatus('success');
+    setTimeout(onClose, 1500);
   };
 
   return (
@@ -88,25 +141,13 @@ export const ReportQuestionModal: React.FC<ReportQuestionModalProps> = ({
         {status === 'success' && (
           <div className="text-center py-8 space-y-3">
             <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto" />
-            <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Report Submitted!</p>
+            <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Report Saved!</p>
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Thank you for helping improve PROVIA.</p>
           </div>
         )}
 
-        {/* Error State */}
-        {status === 'error' && (
-          <div className="text-center py-6 space-y-3">
-            <AlertTriangle className="w-12 h-12 text-red-500 mx-auto" />
-            <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>Failed to send report</p>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Please try again later.</p>
-            <button onClick={() => setStatus('idle')} className="text-xs font-bold px-4 py-2 rounded-lg" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-              Try Again
-            </button>
-          </div>
-        )}
-
         {/* Form */}
-        {(status === 'idle' || status === 'sending') && (
+        {status === 'idle' && (
           <>
             {/* Question Preview */}
             <div className="rounded-xl p-3 text-xs" style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
@@ -142,7 +183,7 @@ export const ReportQuestionModal: React.FC<ReportQuestionModalProps> = ({
             </div>
 
             {/* Suggested Correct Answer */}
-            {(issueType === 'Wrong Answer') && (
+            {issueType === 'Wrong Answer' && (
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-wider mb-2 block" style={{ color: 'var(--text-muted)' }}>
                   What should the correct answer be?
@@ -191,21 +232,42 @@ export const ReportQuestionModal: React.FC<ReportQuestionModalProps> = ({
             {/* Submit */}
             <button
               onClick={handleSubmit}
-              disabled={!issueType || status === 'sending'}
+              disabled={!issueType}
               className="w-full py-3.5 rounded-xl font-black text-xs tracking-widest text-white flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-40"
               style={{ backgroundColor: issueType ? '#ef4444' : 'var(--bg-secondary)' }}
             >
-              {status === 'sending' ? (
-                <span className="animate-pulse">SENDING...</span>
-              ) : (
-                <>
-                  <Send className="w-4 h-4" /> SUBMIT REPORT
-                </>
-              )}
+              <Send className="w-4 h-4" /> SUBMIT REPORT
             </button>
           </>
         )}
       </div>
     </div>
+  );
+};
+
+// ── Export Button Component (for Dashboard settings) ──
+export const ExportReportsButton: React.FC = () => {
+  const count = getReportCount();
+
+  if (count === 0) return null;
+
+  return (
+    <button
+      onClick={downloadReports}
+      className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold active:scale-[0.98] transition-transform"
+      style={{
+        backgroundColor: 'var(--bg-secondary)',
+        border: '1px solid var(--border)',
+        color: 'var(--text-primary)',
+      }}
+    >
+      <span className="flex items-center gap-2">
+        <Download className="w-4 h-4 text-orange-500" />
+        Download Question Reports
+      </span>
+      <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ backgroundColor: '#f9731620', color: '#f97316' }}>
+        {count}
+      </span>
+    </button>
   );
 };
