@@ -21,7 +21,17 @@
 function doPost(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    var data = JSON.parse(e.postData.contents);
+    
+    // Support both form submissions (e.parameter) and JSON body (e.postData)
+    var data = {};
+    
+    if (e.parameter && e.parameter.questionId) {
+      // Form submission — data comes as key-value pairs
+      data = e.parameter;
+    } else if (e.postData && e.postData.contents) {
+      // JSON body — parse from postData
+      data = JSON.parse(e.postData.contents);
+    }
     
     sheet.appendRow([
       data.timestamp || new Date().toISOString(),
