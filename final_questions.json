@@ -21317,7 +21317,7 @@
       "Glucophage",
       "Glucagon"
     ],
-    "correctAnswer": 1,
+    "correctAnswer": 3,
     "explanation": "The correct answer is D) Glucagon, not Glibenclamide. Glucagon is used in the treatment of hypoglycemia because it stimulates the liver to release stored glucose (glycogen) into the bloodstream, thereby increasing blood glucose levels. Glibenclamide and Gliclazide are sulfonylureas that actually lower blood glucose levels by stimulating insulin release, making them incorrect choices. Glucophage (Metformin) is also incorrect as it decreases hepatic glucose production and increases insulin sensitivity, but does not rapidly increase blood glucose levels like glucagon does in hypoglycemic emergencies.",
     "category": "Insulin & OHA"
   },

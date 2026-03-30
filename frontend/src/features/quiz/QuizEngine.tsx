@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useQuizStore } from './store/quizStore';
 import { useProviaStore } from '../roadmap/store/proviaStore';
-import { CheckCircle, XCircle, Trophy, Clock, Star, LayoutGrid, ArrowLeft, ArrowRight } from 'lucide-react';
+import { CheckCircle, XCircle, Trophy, Clock, Star, LayoutGrid, ArrowLeft, ArrowRight, Flag } from 'lucide-react';
+import { ReportQuestionModal } from './ReportQuestionModal';
+import type { Question } from './store/quizStore';
 
 export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ dayId, onClose }) => {
   const {
@@ -17,6 +19,7 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
   const [timeLeft, setTimeLeft] = useState(questions.length * 90); // For mock mode (count down, 90s per Q)
   const [showReview, setShowReview] = useState(false);
   const [reviewingWrong, setReviewingWrong] = useState(false);
+  const [reportQuestion, setReportQuestion] = useState<Question | null>(null);
 
   // Time tracking
   useEffect(() => {
@@ -150,11 +153,32 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
                         <p className="leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{q.explanation}</p>
                       </div>
                     )}
+
+                    {/* Report Button */}
+                    <button
+                      onClick={() => setReportQuestion(q)}
+                      className="mt-3 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-3 py-2 rounded-lg active:scale-95 transition-transform"
+                      style={{ color: '#f97316', backgroundColor: '#f9731610', border: '1px solid #f9731630' }}
+                    >
+                      <Flag className="w-3 h-3" /> Report Question
+                    </button>
                   </div>
                 );
               })
             )}
           </div>
+
+          {/* Report Question Modal (in Review) */}
+          {reportQuestion && (
+            <ReportQuestionModal
+              questionId={reportQuestion.id}
+              dayId={dayId}
+              questionText={reportQuestion.question}
+              options={reportQuestion.options}
+              correctAnswerIndex={reportQuestion.correctAnswer}
+              onClose={() => setReportQuestion(null)}
+            />
+          )}
         </div>
       );
     }
@@ -478,11 +502,21 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
         <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
           {mode === 'mock' ? 'MOCK EXAM' : `Day ${dayId}`} · {currentIndex + 1}/{questions.length}
         </span>
-        <div
-          className="text-[11px] font-bold flex-shrink-0 w-12 text-right"
-          style={{ color: (mode === 'daily' && timeSpent > 90) || (mode === 'mock' && timeLeft < 60) ? '#ef4444' : 'var(--text-muted)' }}
-        >
-          {mode === 'daily' ? formatTime(timeSpent) : formatTime(timeLeft)}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setReportQuestion(currentQ)}
+            className="p-1.5 rounded-lg active:scale-90 transition-transform"
+            style={{ color: 'var(--text-muted)' }}
+            title="Report this question"
+          >
+            <Flag className="w-4 h-4" />
+          </button>
+          <div
+            className="text-[11px] font-bold flex-shrink-0 w-12 text-right"
+            style={{ color: (mode === 'daily' && timeSpent > 90) || (mode === 'mock' && timeLeft < 60) ? '#ef4444' : 'var(--text-muted)' }}
+          >
+            {mode === 'daily' ? formatTime(timeSpent) : formatTime(timeLeft)}
+          </div>
         </div>
       </div>
 
@@ -607,6 +641,18 @@ export const QuizEngine: React.FC<{ dayId: number; onClose: () => void }> = ({ d
           </div>
         )}
       </div>
+
+      {/* Report Question Modal */}
+      {reportQuestion && (
+        <ReportQuestionModal
+          questionId={reportQuestion.id}
+          dayId={dayId}
+          questionText={reportQuestion.question}
+          options={reportQuestion.options}
+          correctAnswerIndex={reportQuestion.correctAnswer}
+          onClose={() => setReportQuestion(null)}
+        />
+      )}
     </div>
   );
 };
