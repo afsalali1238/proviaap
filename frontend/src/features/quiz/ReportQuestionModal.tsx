@@ -85,49 +85,17 @@ export function exportReportsCSV() {
   URL.revokeObjectURL(url);
 }
 
-/** Try to send report to Google Sheets (best-effort, won't block UI) */
+/** Send report to Google Sheets via fetch POST */
 function trySendToSheet(report: QuestionReport) {
   try {
-    const iframeName = 'report-frame-' + Date.now();
-    const iframe = document.createElement('iframe');
-    iframe.name = iframeName;
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = APPS_SCRIPT_URL;
-    form.target = iframeName;
-
-    const payload: Record<string, string> = {
-      questionId: String(report.questionId),
-      day: String(report.day),
-      questionText: report.questionText,
-      issueType: report.issueType,
-      comment: report.comment,
-      suggestedAnswer: report.suggestedAnswer,
-      shownCorrectAnswer: report.shownCorrectAnswer,
-      allOptions: report.allOptions,
-      timestamp: report.timestamp,
-    };
-
-    Object.entries(payload).forEach(([key, value]) => {
-      const input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = key;
-      input.value = value;
-      form.appendChild(input);
-    });
-
-    document.body.appendChild(form);
-    form.submit();
-
-    setTimeout(() => {
-      try { document.body.removeChild(form); } catch (_) { /* ignore */ }
-      try { document.body.removeChild(iframe); } catch (_) { /* ignore */ }
-    }, 5000);
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(report),
+    }).catch(() => { /* silently fail — report already in localStorage */ });
   } catch {
-    // Silently fail — the report is already saved locally
+    // Silently fail
   }
 }
 
