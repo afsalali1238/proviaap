@@ -3,6 +3,7 @@ import { useProviaStore } from './store/proviaStore';
 import { useQuizStore } from '../quiz/store/quizStore';
 import { QuizEngine } from '../quiz/QuizEngine';
 import { ALL_QUESTIONS } from '../questions/data/mockQuestions';
+import { exportReportsCSV, getStoredReports } from '../quiz/ReportQuestionModal';
 
 const WORLD_NAMES = [
   "The Foundation",
@@ -106,9 +107,24 @@ export const Roadmap: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="text-right">
-          <h1 className="text-2xl font-black bg-gradient-to-r from-blue-400 via-emerald-400 to-indigo-400 bg-clip-text text-transparent italic tracking-tighter leading-none">PROVIA</h1>
-          <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Mastery Program</span>
+        <div className="text-right flex items-center gap-3">
+          {getStoredReports().length > 0 && (
+            <button
+              onClick={exportReportsCSV}
+              className="bg-rose-500/10 px-4 py-2.5 rounded-2xl border border-rose-500/20 flex items-center gap-2 hover:bg-rose-500/20 transition-all active:scale-95"
+              title="Download question reports as CSV"
+            >
+              <span className="text-sm">🚩</span>
+              <div className="flex flex-col">
+                <span className="text-rose-400 font-black text-[10px] leading-none">{getStoredReports().length}</span>
+                <span className="text-[7px] uppercase font-black tracking-tighter text-rose-400/50">Reports</span>
+              </div>
+            </button>
+          )}
+          <div>
+            <h1 className="text-2xl font-black bg-gradient-to-r from-blue-400 via-emerald-400 to-indigo-400 bg-clip-text text-transparent italic tracking-tighter leading-none">PROVIA</h1>
+            <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Mastery Program</span>
+          </div>
         </div>
       </div>
 

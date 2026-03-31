@@ -10,6 +10,18 @@ interface ReportQuestionModalProps {
   onClose: () => void;
 }
 
+export interface QuestionReport {
+  timestamp: string;
+  questionId: string;
+  day: number;
+  questionText: string;
+  issueType: string;
+  comment: string;
+  suggestedAnswer: string;
+  shownCorrectAnswer: string;
+  allOptions: string;
+}
+
 const ISSUE_TYPES = [
   'Wrong Answer',
   'Wrong Question Text',
@@ -19,8 +31,105 @@ const ISSUE_TYPES = [
   'Other',
 ];
 
-// Replace this with your deployed Google Apps Script URL
+const STORAGE_KEY = 'provia-question-reports';
+
+// Google Apps Script URL (optional - will try to send but not required)
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6_PXewl21Nh7FviBikqHQ4powPGXdGZIG7Tssy3wVcEqyP5QdWmYm2Ay-3oHamBLK/exec';
+
+/** Get all stored reports */
+export function getStoredReports(): QuestionReport[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Save a report to localStorage */
+function saveReport(report: QuestionReport) {
+  const reports = getStoredReports();
+  reports.push(report);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(reports));
+}
+
+/** Export all reports as CSV and download */
+export function exportReportsCSV() {
+  const reports = getStoredReports();
+  if (reports.length === 0) return;
+
+  const headers = ['Timestamp', 'Question ID', 'Day', 'Question Text', 'Issue Type', 'Comment', 'Suggested Answer', 'Shown Correct Answer', 'All Options'];
+  const csvRows = [headers.join(',')];
+
+  for (const r of reports) {
+    const row = [
+      r.timestamp,
+      r.questionId,
+      r.day,
+      `"${(r.questionText || '').replace(/"/g, '""')}"`,
+      r.issueType,
+      `"${(r.comment || '').replace(/"/g, '""')}"`,
+      `"${(r.suggestedAnswer || '').replace(/"/g, '""')}"`,
+      `"${(r.shownCorrectAnswer || '').replace(/"/g, '""')}"`,
+      `"${(r.allOptions || '').replace(/"/g, '""')}"`,
+    ];
+    csvRows.push(row.join(','));
+  }
+
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `provia_reports_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/** Try to send report to Google Sheets (best-effort, won't block UI) */
+function trySendToSheet(report: QuestionReport) {
+  try {
+    const iframeName = 'report-frame-' + Date.now();
+    const iframe = document.createElement('iframe');
+    iframe.name = iframeName;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = APPS_SCRIPT_URL;
+    form.target = iframeName;
+
+    const payload: Record<string, string> = {
+      questionId: String(report.questionId),
+      day: String(report.day),
+      questionText: report.questionText,
+      issueType: report.issueType,
+      comment: report.comment,
+      suggestedAnswer: report.suggestedAnswer,
+      shownCorrectAnswer: report.shownCorrectAnswer,
+      allOptions: report.allOptions,
+      timestamp: report.timestamp,
+    };
+
+    Object.entries(payload).forEach(([key, value]) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+
+    setTimeout(() => {
+      try { document.body.removeChild(form); } catch (_) { /* ignore */ }
+      try { document.body.removeChild(iframe); } catch (_) { /* ignore */ }
+    }, 5000);
+  } catch {
+    // Silently fail — the report is already saved locally
+  }
+}
 
 export const ReportQuestionModal: React.FC<ReportQuestionModalProps> = ({
   questionId, dayId, questionText, options, correctAnswerIndex, onClose,
@@ -34,53 +143,26 @@ export const ReportQuestionModal: React.FC<ReportQuestionModalProps> = ({
     if (!issueType) return;
     setStatus('sending');
 
-    const payload: Record<string, string> = {
+    const report: QuestionReport = {
+      timestamp: new Date().toISOString(),
       questionId: String(questionId),
-      day: String(dayId),
+      day: dayId,
       questionText: questionText.slice(0, 200),
       issueType,
       comment,
       suggestedAnswer,
       shownCorrectAnswer: options[correctAnswerIndex] || 'N/A',
       allOptions: options.join(' | '),
-      timestamp: new Date().toISOString(),
     };
 
-    try {
-      // Use hidden iframe + form to bypass CORS completely
-      const iframeName = 'report-frame-' + Date.now();
-      const iframe = document.createElement('iframe');
-      iframe.name = iframeName;
-      iframe.style.display = 'none';
-      document.body.appendChild(iframe);
+    // Always save locally (guaranteed)
+    saveReport(report);
 
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = APPS_SCRIPT_URL;
-      form.target = iframeName;
+    // Try to send to Google Sheets (best-effort)
+    trySendToSheet(report);
 
-      Object.entries(payload).forEach(([key, value]) => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = value;
-        form.appendChild(input);
-      });
-
-      document.body.appendChild(form);
-      form.submit();
-
-      // Clean up and show success
-      setTimeout(() => {
-        try { document.body.removeChild(form); } catch (_) { /* ignore */ }
-        try { document.body.removeChild(iframe); } catch (_) { /* ignore */ }
-      }, 3000);
-
-      setStatus('success');
-      setTimeout(onClose, 1800);
-    } catch {
-      setStatus('error');
-    }
+    setStatus('success');
+    setTimeout(onClose, 1800);
   };
 
   return (
