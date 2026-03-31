@@ -38,14 +38,20 @@ pnpm-debug.log*
 *.csv
 *backup.json
 final_questionnaire_data*.json
+final_questions.json
 provia_question_bank.json
-!final_questions.json
+!final_questions_complete.json
 
 # Build Logs and Temporary Files
 *.log
 *.txt
 !README.md
 frontend/src/features/questions/data/questions_v2.ts
+
+# Backend
+backend/venv/
+backend/__pycache__/
+__pycache__/
 
 # Vercel
 .vercel

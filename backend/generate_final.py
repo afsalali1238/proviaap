@@ -3,7 +3,7 @@ import os
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-json_path = os.path.join(BASE_DIR, 'final_questions.json')
+json_path = os.path.join(BASE_DIR, 'final_questions_complete.json')
 output_path = os.path.join(BASE_DIR, 'frontend', 'src', 'features', 'questions', 'data', 'mockQuestions.ts')
 
 with open(json_path, 'r', encoding='utf-8') as f:
