@@ -5,6 +5,7 @@ import { useQuizStore } from '../features/quiz/store/quizStore';
 import { useThemeStore } from '../features/theme/themeStore';
 import { QuizEngine } from '../features/quiz/QuizEngine';
 import { ALL_QUESTIONS } from '../features/questions/data/mockQuestions';
+import { exportReportsCSV, getStoredReports } from '../features/quiz/ReportQuestionModal';
 import { BattleArena } from '../features/battle/pages/BattleArena';
 import { ChatPage } from '../features/battle/pages/ChatPage';
 import type { Opponent } from '../features/battle/data/battle.data';
@@ -566,6 +567,16 @@ export const Dashboard: React.FC = () => {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-black" style={{ backgroundColor: '#f59e0b15', color: '#f59e0b', border: '1px solid #f59e0b30' }}>💎 {heroCredits}</div>
             <div className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-black" style={{ backgroundColor: '#f9731615', color: '#f97316', border: '1px solid #f9731630' }}>🔥 {streak}</div>
+            {getStoredReports().length > 0 && (
+              <button
+                onClick={exportReportsCSV}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-black active:scale-95 transition-transform"
+                style={{ backgroundColor: '#ef444415', color: '#ef4444', border: '1px solid #ef444430' }}
+                title="Download question reports as CSV"
+              >
+                🚩 {getStoredReports().length}
+              </button>
+            )}
             <button onClick={() => setShowSettings(true)} className="p-2 rounded-lg active:scale-90" style={{ color: 'var(--text-muted)' }}>
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
