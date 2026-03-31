@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useProviaStore } from './store/proviaStore';
 import { useQuizStore } from '../quiz/store/quizStore';
 import { QuizEngine } from '../quiz/QuizEngine';
@@ -31,6 +31,12 @@ export const Roadmap: React.FC = () => {
   const [activeDay, setActiveDay] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [previewDay, setPreviewDay] = useState<number | null>(null);
+  const [reportCount, setReportCount] = useState(0);
+
+  // Refresh report count whenever quiz closes
+  useEffect(() => {
+    setReportCount(getStoredReports().length);
+  }, [activeDay]);
 
   const handleDayClick = (dayId: number, isUnlocked: boolean) => {
     if (!isUnlocked) {
@@ -108,7 +114,7 @@ export const Roadmap: React.FC = () => {
           </div>
         </div>
         <div className="text-right flex items-center gap-3">
-          {getStoredReports().length > 0 && (
+          {reportCount > 0 && (
             <button
               onClick={exportReportsCSV}
               className="bg-rose-500/10 px-4 py-2.5 rounded-2xl border border-rose-500/20 flex items-center gap-2 hover:bg-rose-500/20 transition-all active:scale-95"
@@ -116,7 +122,7 @@ export const Roadmap: React.FC = () => {
             >
               <span className="text-sm">🚩</span>
               <div className="flex flex-col">
-                <span className="text-rose-400 font-black text-[10px] leading-none">{getStoredReports().length}</span>
+                <span className="text-rose-400 font-black text-[10px] leading-none">{reportCount}</span>
                 <span className="text-[7px] uppercase font-black tracking-tighter text-rose-400/50">Reports</span>
               </div>
             </button>
