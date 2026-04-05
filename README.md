@@ -38,8 +38,6 @@ Prometric/
 │   │   ├── data/           # Static JSON data (Questions, Curriculum)
 │   │   └── App.tsx         # Main Entry
 │   └── public/             # Static Assets (Manifest, Icons)
-├── docs/                   # Documentation (Memories, Logic, Plans)
-└── backend/                # (Deprecated) Old Python/Firebase scripts
 ```
 
 ## 💻 Running Locally
@@ -67,8 +65,7 @@ Prometric/
 
 ## 📚 Documentation
 - [Product Requirements (PRD)](./prd.md)
-- [System Modules](./modules.md)
-- [Development Log](./memory.md)
+- [Deployment Notes](./deploy.md)
 
 ---
 **Maintained by**: Antigravity & User
