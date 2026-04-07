@@ -6266,8 +6266,8 @@ export const MOCK_QUESTIONS: Record<number, Question[]> = {
         "staffing",
         "controlling",
       ],
-      correctAnswer: 1,
-      explanation: "Planning involves setting goals and deciding how to achieve them, which includes making decisions about formulary drugs in a hospital setting. This is a key management function.",
+      correctAnswer: 0,
+      explanation: "Organizing involves establishing an internal structure, dividing work, and forming groups or committees (such as a formulary committee) to accomplish specific tasks. Making a group to arrange formulary drugs falls under the 'organizing' function of management rather than 'planning' (which focuses on setting goals).",
       topic: "Pharmacy Management",
     },
     {
@@ -23650,8 +23650,8 @@ export const MOCK_QUESTIONS: Record<number, Question[]> = {
         "Apologize and give the correct medication and report error to the medication safety officer",
         "Apologize and give the correct medication and ask to report error to the hospital administration",
       ],
-      correctAnswer: 0,
-      explanation: "The pharmacist should apologize, provide the correct medication, document the dispensing error, and report it through the institution's error reporting system.",
+      correctAnswer: 2,
+      explanation: "The pharmacist must apologize, provide the correct medication, and importantly, document and report the dispensing error to the medication safety officer. Sweeping the error under the rug (Option A) violates safety protocols.",
       topic: "Asthma / NSAIDS",
     },
     {
